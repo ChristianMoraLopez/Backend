@@ -6,8 +6,8 @@ import dotenv from 'dotenv';
 import http from 'http';
 import { Server } from 'socket.io';
 import { connectDB } from './config/database';
-import authRoutes from './routes/authRoutes';
-import userRoutes from './routes/authRoutes';
+import authRoutes  from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
 import locationRoutes from './routes/locationRoutes';
 import postRoutes from './routes/postRoutes'; // Importa las rutas de posts
 
