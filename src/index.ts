@@ -8,7 +8,7 @@ import { connectDB } from './config/database';
 
 // Rutas
 import authRoutes  from './routes/authRoutes';
-import userRoutes from './routes/userRoutes';
+import userRoutes from './routes/authRoutes';
 import locationRoutes from './routes/locationRoutes';
 import postRoutes from './routes/postRoutes';
 
