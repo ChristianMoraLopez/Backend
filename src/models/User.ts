@@ -21,4 +21,18 @@ const userSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-export const User = mongoose.model('User', userSchema);
+// Definir la interfaz para el documento de usuario
+export interface UserDocument extends mongoose.Document {
+  name: string;
+  email: string;
+  password?: string;
+  role: 'visitor' | 'registered' | 'subscriber' | 'admin';
+  avatar?: string;
+  location?: string;
+  authProvider: 'email' | 'google';
+  googleId?: string;
+  createdAt: Date;
+}
+
+// Crear el modelo
+export const User = mongoose.model<UserDocument>('User', userSchema);

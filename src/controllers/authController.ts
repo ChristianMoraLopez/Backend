@@ -3,6 +3,7 @@ import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import { User } from '../models/User';
+import { AuthRequest } from '../middleware/auth';
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -84,9 +85,46 @@ export const register: RequestHandler = async (req, res) => {
 };
 
 
-export const login: RequestHandler = async (req, res) => {
+export const getProfile: RequestHandler = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+      // Verificar si req.user existe y mostrar su estructura para depuración
+      console.log('req.user:', req.user);
+      
+      if (!req.user) {
+        res.status(401).json({ message: 'No autenticado' });
+        return;
+      }
+      
+      // Usar _id en lugar de id
+      const userId = req.user._id;
+      
+      console.log('userId:', userId);
+      
+      const user = await User.findById(userId).select('-password');
+      
+      if (!user) {
+        res.status(404).json({ message: 'User not found' });
+        return;
+      }
+      
+      res.json({ user });
+      return;
+    } catch (error) {
+      console.error('Get profile error:', error);
+      res.status(500).json({ message: 'Server error' });
+      return;
+    }
+  };
+
+
+
+
+export const login: RequestHandler = async (req: AuthRequest, res: Response) => {
     try {
         const { email, password } = req.body;
+
+        const userId = req.user?._id;
+        
 
         const user = await User.findOne({ email });
         if (!user) {
@@ -115,6 +153,7 @@ export const login: RequestHandler = async (req, res) => {
         );
 
         res.json({ user, token });
+        console.log("Usuario logueado exitosamente" + user + token);
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ message: 'Server error' });
