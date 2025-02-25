@@ -1,10 +1,13 @@
+// src/app.ts
+
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/database';
-import authRoutes from './routes/authRoutes'; // Importa las rutas de autenticación
-import userRoutes from './routes/authRoutes'; // Importa las rutas de autenticación
-
+import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/authRoutes';
+import locationRoutes from './routes/locationRoutes';
+import postRoutes from './routes/postRoutes'; // Importa las rutas de posts
 
 dotenv.config();
 
@@ -20,6 +23,12 @@ connectDB();
 // Montar las rutas de autenticación en "/api/auth"
 app.use('/api/auth', authRoutes);
 app.use('/api', userRoutes);
+
+// Montar las rutas de locaciones en "/api/locations"
+app.use('/api/locations', locationRoutes);
+
+// Montar las rutas de posts en "/api/posts"
+app.use('/api/posts', postRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {

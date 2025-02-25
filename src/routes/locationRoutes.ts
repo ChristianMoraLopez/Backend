@@ -1,10 +1,8 @@
-
 // src/routes/locationRoutes.ts
+
 import express from 'express';
 import { auth } from '../middleware/auth';
-import  createLocation from '../controllers/locationController';
-import getLocations from '../controllers/locationController';
-import getLocation from '../controllers/locationController';
+import { createLocation, getLocations, getLocation } from '../controllers/locationController';
 
 const router = express.Router();
 
