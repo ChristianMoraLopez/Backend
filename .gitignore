@@ -37,4 +37,5 @@ coverage/
 
 ### Misc ###
 dist/
-*.local
+*.local.env
+.env
