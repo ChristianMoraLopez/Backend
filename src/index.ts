@@ -3,6 +3,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import http from 'http';
+import { Server } from 'socket.io';
 import { connectDB } from './config/database';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/authRoutes';
@@ -12,6 +14,28 @@ import postRoutes from './routes/postRoutes'; // Importa las rutas de posts
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Ajustar según tu configuración de seguridad
+    methods: ["GET", "POST"]
+  }
+});
+
+// Configurar Socket.io
+io.on('connection', (socket) => {
+  console.log('Usuario conectado:', socket.id);
+  
+  // Unir al usuario a la sala de 'posts'
+  socket.join('posts');
+  
+  socket.on('disconnect', () => {
+    console.log('Usuario desconectado:', socket.id);
+  });
+});
+
+// Exportar io para usarlo en otros módulos
+export { io };
 
 // Middleware
 app.use(cors());
@@ -36,6 +60,8 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+
+// Importante: usar 'server' en lugar de 'app' para iniciar el servidor
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
