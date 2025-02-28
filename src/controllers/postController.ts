@@ -8,56 +8,58 @@ import { io } from '../index';
 export const createPost = async (req: Request, res: Response): Promise<void> => {
   try {
     const { title, content, location } = req.body;
-    const author = req.user?._id; // Asumiendo que el usuario está autenticado y su ID está disponible en req.user
-    
+    const author = req.user?._id;
+
     if (!author) {
       res.status(401).json({ message: 'No autenticado' });
       return;
     }
-    
-    // Validar location si se proporciona
+
     if (location && !mongoose.Types.ObjectId.isValid(location)) {
       res.status(400).json({ message: 'Invalid location ID' });
       return;
     }
-    
+
     let imageUrl = '';
     if (req.file) {
-      // Subir la imagen a Cloudinary
+      console.log('Uploading file to Cloudinary:', req.file);
       const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: 'posts', // Carpeta en Cloudinary donde se guardarán las imágenes
+        folder: 'posts',
       });
-      imageUrl = result.secure_url; // URL de la imagen en Cloudinary
+      imageUrl = result.secure_url;
+      console.log('File uploaded successfully:', imageUrl);
     }
-    
+
     const newPost = new Post({
       title,
       content,
-      image: imageUrl, // Guardar la URL de la imagen
+      image: imageUrl,
       author,
       location,
     });
-    
+
     await newPost.save();
-    
-    // Obtener el post con las referencias pobladas para enviarlo a través de websockets
+    console.log('Post saved to database:', newPost);
+
     const populatedPost = await Post.findById(newPost._id)
       .populate('author', 'name email avatar location')
       .populate('location', 'name');
-    
-    // Emitir el nuevo post a todos los clientes conectados
+
     io.to('posts').emit('new_post', populatedPost);
-    
+    console.log('New post emitted via WebSocket');
+
     res.status(201).json(newPost);
   } catch (error) {
-    console.error('Error al crear el post:', error);
-    res.status(500).json({ message: 'Error al crear el post' });
-  }
+  console.error('Error al crear el post:', (error as Error).message);
+  res.status(500).json({ message: 'Error al crear el post', error: (error as Error).message });
+}
 };
 
 // Obtener todos los posts
 export const getPosts = async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log('Request body:', req.body);
+console.log('Uploaded file:', req.file);
     const posts = await Post.find()
       .populate('author', 'name email avatar location')
       .populate('location', 'name')
