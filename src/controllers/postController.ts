@@ -146,7 +146,6 @@ export const likePost = async (req: Request, res: Response): Promise<void> => {
   }
 };
 // Añadir un comentario a un post
-// Añadir un comentario a un post
 export const commentPost = async (req: Request, res: Response): Promise<void> => {
   try {
     const { content } = req.body;
@@ -190,7 +189,7 @@ export const commentPost = async (req: Request, res: Response): Promise<void> =>
     const updatedPost = await Post.findById(postId)
       .populate('author', 'name email avatar location')
       .populate('location', 'name')
-      .populate('commentsList.author', 'name avatar');
+      .populate('commentsList.author', 'name email avatar location');
 
     // Emitir la actualización del post a todos los clientes
     io.to('posts').emit('update_post', updatedPost);
