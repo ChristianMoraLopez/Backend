@@ -92,98 +92,110 @@ export const getPost = async (req: Request, res: Response): Promise<void> => {
 };
 
 // Dar "like" a un post
+// Dar "like" a un post
 export const likePost = async (req: Request, res: Response): Promise<void> => {
   try {
     const postId = req.params.id;
     const userId = req.user?._id;
-    
+
+    // Verificar si el usuario está autenticado
     if (!userId) {
       res.status(401).json({ message: 'No autenticado' });
       return;
     }
-    
+
+    // Buscar el post en la base de datos
     const post = await Post.findById(postId);
     if (!post) {
       res.status(404).json({ message: 'Post no encontrado' });
       return;
     }
-    
+
     // Verificar si el usuario ya dio like al post
-    const likedIndex = post.likedBy?.findIndex(id => id.toString() === userId.toString());
-    
+    const likedIndex = post.likedBy?.findIndex((id) => id.toString() === userId.toString());
+
     if (likedIndex === -1 || likedIndex === undefined) {
       // Si no ha dado like, añadir el usuario a likedBy y aumentar el contador
       post.likedBy = [...(post.likedBy || []), userId];
       post.likes = (post.likes || 0) + 1;
     } else {
       // Si ya dio like, quitar al usuario de likedBy y decrementar el contador
-      post.likedBy = post.likedBy?.filter(id => id.toString() !== userId.toString());
+      post.likedBy = post.likedBy?.filter((id) => id.toString() !== userId.toString());
       post.likes = Math.max(0, (post.likes || 0) - 1);
     }
-    
+
+    // Guardar los cambios en la base de datos
     await post.save();
-    
+
     // Obtener el post actualizado con referencias pobladas
     const updatedPost = await Post.findById(postId)
       .populate('author', 'name email avatar location')
       .populate('location', 'name');
-    
+
     // Emitir la actualización del post a todos los clientes
     io.to('posts').emit('update_post', updatedPost);
-    
-    res.status(200).json({ 
+
+    // Responder con el estado del like y el número de likes
+    res.status(200).json({
       liked: likedIndex === -1 || likedIndex === undefined,
-      likes: post.likes 
+      likes: post.likes,
     });
   } catch (error) {
     console.error('Error al dar like al post:', error);
     res.status(500).json({ message: 'Error al actualizar el post' });
   }
 };
-
+// Añadir un comentario a un post
 // Añadir un comentario a un post
 export const commentPost = async (req: Request, res: Response): Promise<void> => {
   try {
     const { content } = req.body;
     const postId = req.params.id;
     const userId = req.user?._id;
-    
+
+    // Verificar si el usuario está autenticado
     if (!userId) {
       res.status(401).json({ message: 'No autenticado' });
       return;
     }
-    
+
+    // Validar que el contenido del comentario no esté vacío
     if (!content || content.trim() === '') {
       res.status(400).json({ message: 'El contenido del comentario no puede estar vacío' });
       return;
     }
-    
+
+    // Buscar el post en la base de datos
     const post = await Post.findById(postId);
     if (!post) {
       res.status(404).json({ message: 'Post no encontrado' });
       return;
     }
-    
+
+    // Crear un nuevo comentario
     const newComment = {
       author: userId,
       content,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
-    
+
+    // Añadir el comentario a la lista de comentarios del post
     post.commentsList = [...(post.commentsList || []), newComment];
     post.comments = (post.comments || 0) + 1;
-    
+
+    // Guardar los cambios en la base de datos
     await post.save();
-    
+
     // Obtener el post actualizado con referencias pobladas
     const updatedPost = await Post.findById(postId)
       .populate('author', 'name email avatar location')
       .populate('location', 'name')
       .populate('commentsList.author', 'name avatar');
-    
+
     // Emitir la actualización del post a todos los clientes
     io.to('posts').emit('update_post', updatedPost);
-    
+
+    // Responder con el post actualizado
     res.status(200).json(updatedPost);
   } catch (error) {
     console.error('Error al comentar el post:', error);

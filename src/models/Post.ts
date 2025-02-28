@@ -24,56 +24,58 @@ const CommentSchema = new Schema({
   author: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
   },
   content: {
     type: String,
-    required: true
+    required: true,
   },
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 const PostSchema = new Schema(
   {
     title: {
       type: String,
-      required: true
+      required: true,
     },
     content: {
       type: String,
-      required: true
+      required: true,
     },
     image: {
-      type: String
+      type: String,
     },
     author: {
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: true
+      required: true,
     },
     location: {
       type: Schema.Types.ObjectId,
-      ref: 'Location'
+      ref: 'Location',
     },
     likes: {
       type: Number,
-      default: 0
+      default: 0,
     },
-    likedBy: [{
-      type: Schema.Types.ObjectId,
-      ref: 'User'
-    }],
+    likedBy: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     comments: {
       type: Number,
-      default: 0
+      default: 0,
     },
-    commentsList: [CommentSchema]
+    commentsList: [CommentSchema],
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 

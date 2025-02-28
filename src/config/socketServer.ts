@@ -26,11 +26,13 @@ export function setupSocketServer(server: HttpServer, allowedOrigins = ["https:/
     io.on('connection', (socket) => {
       console.log('Usuario conectado al namespace principal:', socket.id);
       socket.join('posts'); // Join the 'posts' room
+      
   
       socket.on('disconnect', () => {
         console.log('Usuario desconectado:', socket.id);
       });
     });
+
   
 
     return io;

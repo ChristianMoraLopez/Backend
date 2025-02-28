@@ -37,6 +37,7 @@ app.use(express.json());
 
 // Configurar Socket.io y exportarlo para usarlo en otros módulos
 const io = setupSocketServer(server, allowedOrigins);
+
 export { io };
 
 // Conectar a la base de datos
