@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 interface CommentInterface {
   author: mongoose.Types.ObjectId;
+  authorName: string; // Nombre del autor como string
   content: string;
   createdAt: Date;
 }
@@ -11,7 +12,9 @@ export interface PostDocument extends Document {
   content: string;
   image?: string;
   author: mongoose.Types.ObjectId;
+  authorName: string; // Nombre del autor como string
   location?: mongoose.Types.ObjectId;
+  locationName?: string; // Nombre de la ubicación como string
   likes?: number;
   likedBy?: mongoose.Types.ObjectId[];
   comments?: number;
@@ -24,6 +27,10 @@ const CommentSchema = new Schema({
   author: {
     type: Schema.Types.ObjectId,
     ref: 'User',
+    required: true,
+  },
+  authorName: {
+    type: String,
     required: true,
   },
   content: {
@@ -54,9 +61,16 @@ const PostSchema = new Schema(
       ref: 'User',
       required: true,
     },
+    authorName: {
+      type: String,
+      required: true,
+    },
     location: {
       type: Schema.Types.ObjectId,
       ref: 'Location',
+    },
+    locationName: {
+      type: String,
     },
     likes: {
       type: Number,

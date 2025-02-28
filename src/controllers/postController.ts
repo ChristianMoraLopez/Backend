@@ -146,11 +146,13 @@ export const likePost = async (req: Request, res: Response): Promise<void> => {
   }
 };
 // Añadir un comentario a un post
+// Añadir un comentario a un post
 export const commentPost = async (req: Request, res: Response): Promise<void> => {
   try {
     const { content } = req.body;
     const postId = req.params.id;
     const userId = req.user?._id;
+    const userName = req.user?.name || 'Usuario desconocido'; // Obtener el nombre del usuario
 
     // Verificar si el usuario está autenticado
     if (!userId) {
@@ -174,6 +176,7 @@ export const commentPost = async (req: Request, res: Response): Promise<void> =>
     // Crear un nuevo comentario
     const newComment = {
       author: userId,
+      authorName: userName, // Guardar el nombre del autor del comentario
       content,
       createdAt: new Date(),
     };
