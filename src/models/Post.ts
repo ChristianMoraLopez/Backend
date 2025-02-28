@@ -12,9 +12,9 @@ export interface PostDocument extends Document {
   content: string;
   image?: string;
   author: mongoose.Types.ObjectId;
-  authorName: string; // Nombre del autor como string
+  authorName?: string; // Cambiado a opcional para compatibilidad con posts existentes
   location?: mongoose.Types.ObjectId;
-  locationName?: string; // Nombre de la ubicación como string
+  locationName?: string; 
   likes?: number;
   likedBy?: mongoose.Types.ObjectId[];
   comments?: number;
@@ -63,7 +63,7 @@ const PostSchema = new Schema(
     },
     authorName: {
       type: String,
-      required: true,
+      required: false, // Cambiado a opcional para compatibilidad con posts existentes
     },
     location: {
       type: Schema.Types.ObjectId,

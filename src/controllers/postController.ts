@@ -9,7 +9,6 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
   try {
     const { title, content, location } = req.body;
     const author = req.user?._id;
-    const authorName = req.user?.name || 'Usuario desconocido';
 
     if (!author) {
       res.status(401).json({ message: 'No autenticado' });
@@ -31,23 +30,12 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
       console.log('File uploaded successfully:', imageUrl);
     }
 
-    // Obtener el nombre de la ubicación si existe
-    let locationName = '';
-    if (location) {
-      const locationDoc = await mongoose.model('Location').findById(location);
-      if (locationDoc) {
-        locationName = locationDoc.name;
-      }
-    }
-
     const newPost = new Post({
       title,
       content,
       image: imageUrl,
       author,
-      authorName, // Añadir el nombre del autor
       location,
-      locationName, // Añadir el nombre de la ubicación
     });
 
     await newPost.save();
@@ -62,9 +50,9 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
 
     res.status(201).json(newPost);
   } catch (error) {
-    console.error('Error al crear el post:', (error as Error).message);
-    res.status(500).json({ message: 'Error al crear el post', error: (error as Error).message });
-  }
+  console.error('Error al crear el post:', (error as Error).message);
+  res.status(500).json({ message: 'Error al crear el post', error: (error as Error).message });
+}
 };
 
 // Obtener todos los posts
@@ -163,7 +151,7 @@ export const commentPost = async (req: Request, res: Response): Promise<void> =>
     const { content } = req.body;
     const postId = req.params.id;
     const userId = req.user?._id;
-    const userName = req.user?.name || 'Usuario desconocido'; // Obtener el nombre del usuario
+    const userName = req.user?.name || 'Usuario desconocido';
 
     // Verificar si el usuario está autenticado
     if (!userId) {
@@ -184,10 +172,28 @@ export const commentPost = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
+    // Si el post no tiene authorName, agregar uno
+    if (!post.authorName) {
+      // Buscar el nombre del autor del post
+      const postAuthor = await mongoose.model('User').findById(post.author);
+      post.authorName = postAuthor?.name || 'Usuario desconocido';
+    }
+
+    // Migrar comentarios existentes si es necesario
+    if (post.commentsList && post.commentsList.length > 0) {
+      for (let i = 0; i < post.commentsList.length; i++) {
+        if (!post.commentsList[i].authorName) {
+          // Buscar el nombre del autor del comentario
+          const commentAuthor = await mongoose.model('User').findById(post.commentsList[i].author);
+          post.commentsList[i].authorName = commentAuthor?.name || 'Usuario desconocido';
+        }
+      }
+    }
+
     // Crear un nuevo comentario
     const newComment = {
       author: userId,
-      authorName: userName, // Guardar el nombre del autor del comentario
+      authorName: userName,
       content,
       createdAt: new Date(),
     };
@@ -211,6 +217,11 @@ export const commentPost = async (req: Request, res: Response): Promise<void> =>
     res.status(200).json(updatedPost);
   } catch (error) {
     console.error('Error al comentar el post:', error);
-    res.status(500).json({ message: 'Error al comentar el post', error: (error as Error).message });
+    // Mostrar el mensaje de error detallado
+    res.status(500).json({ 
+      message: 'Error al comentar el post', 
+      error: (error as Error).message,
+      stack: (error as Error).stack
+    });
   }
 };
