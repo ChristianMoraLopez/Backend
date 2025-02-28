@@ -7,7 +7,7 @@ import { connectDB } from './config/database';
 
 // Rutas
 import authRoutes from './routes/authRoutes';
-import userRoutes from './routes/authRoutes';
+import userRoutes from './routes/authRoutes'; 
 import locationRoutes from './routes/locationRoutes';
 import postRoutes from './routes/postRoutes';
 
@@ -33,24 +33,31 @@ app.use(cors({
 
 app.use(express.json());
 
-// **💡 Configurar Socket.io**
+// Configurar Socket.io
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+  },
+  path: '/socket.io', // Make sure this matches the client path
+  transports: ['websocket', 'polling']
 });
 
-// **💡 Manejo de conexión Socket.io**
+// Manejo de conexión Socket.io
 io.on('connection', (socket) => {
   console.log('Usuario conectado:', socket.id);
   
-  // Unir al usuario a una sala
+  // Unir al usuario a una sala para recibir actualizaciones de posts
   socket.join('posts');
 
-  socket.on('message', (data) => {
-    console.log('Mensaje recibido:', data);
-    io.to('posts').emit('newMessage', data);
+  // Evento personalizado para pruebas
+  socket.on('client_message', (data) => {
+    console.log('Mensaje del cliente:', data);
+    // Responder al cliente que envió el mensaje
+    socket.emit('server_response', { message: 'Mensaje recibido en el servidor' });
+    // Enviar a todos los clientes excepto al remitente
+    socket.broadcast.emit('broadcast_message', { message: 'Nuevo mensaje de un usuario' });
   });
 
   socket.on('disconnect', () => {
@@ -66,14 +73,14 @@ connectDB();
 
 // Montar rutas
 app.use('/api/auth', authRoutes);
-app.use('/api', userRoutes);
+app.use('/api/users', userRoutes); // Corregido
 app.use('/api/locations', locationRoutes);
 app.use('/api/posts', postRoutes);
 
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
 
 export default app;

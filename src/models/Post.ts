@@ -1,17 +1,80 @@
-// src/models/Post.ts
+import mongoose, { Schema, Document } from 'mongoose';
 
-import mongoose from 'mongoose';
+interface CommentInterface {
+  author: mongoose.Types.ObjectId;
+  content: string;
+  createdAt: Date;
+}
 
-const postSchema = new mongoose.Schema({
-    title: { type: String, required: true },
-    content: { type: String, required: true },
-    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    image: { type: String },
-    likes: { type: Number, default: 0 },
-    comments: { type: Number, default: 0 },
-    createdAt: { type: Date, default: Date.now },
-    location: { type: mongoose.Schema.Types.ObjectId, ref: 'Location' },
-    shared: { type: Number, default: 0 }
-  });
-  
-  export const Post = mongoose.model('Post', postSchema);
+export interface PostDocument extends Document {
+  title: string;
+  content: string;
+  image?: string;
+  author: mongoose.Types.ObjectId;
+  location?: mongoose.Types.ObjectId;
+  likes?: number;
+  likedBy?: mongoose.Types.ObjectId[];
+  comments?: number;
+  commentsList?: CommentInterface[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const CommentSchema = new Schema({
+  author: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  content: {
+    type: String,
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const PostSchema = new Schema(
+  {
+    title: {
+      type: String,
+      required: true
+    },
+    content: {
+      type: String,
+      required: true
+    },
+    image: {
+      type: String
+    },
+    author: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    location: {
+      type: Schema.Types.ObjectId,
+      ref: 'Location'
+    },
+    likes: {
+      type: Number,
+      default: 0
+    },
+    likedBy: [{
+      type: Schema.Types.ObjectId,
+      ref: 'User'
+    }],
+    comments: {
+      type: Number,
+      default: 0
+    },
+    commentsList: [CommentSchema]
+  },
+  {
+    timestamps: true
+  }
+);
+
+export const Post = mongoose.model<PostDocument>('Post', PostSchema);
