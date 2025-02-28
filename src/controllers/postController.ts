@@ -9,6 +9,7 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
   try {
     const { title, content, location } = req.body;
     const author = req.user?._id;
+    const authorName = req.user?.name || 'Usuario desconocido';
 
     if (!author) {
       res.status(401).json({ message: 'No autenticado' });
@@ -30,12 +31,23 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
       console.log('File uploaded successfully:', imageUrl);
     }
 
+    // Obtener el nombre de la ubicación si existe
+    let locationName = '';
+    if (location) {
+      const locationDoc = await mongoose.model('Location').findById(location);
+      if (locationDoc) {
+        locationName = locationDoc.name;
+      }
+    }
+
     const newPost = new Post({
       title,
       content,
       image: imageUrl,
       author,
+      authorName, // Añadir el nombre del autor
       location,
+      locationName, // Añadir el nombre de la ubicación
     });
 
     await newPost.save();
@@ -50,9 +62,9 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
 
     res.status(201).json(newPost);
   } catch (error) {
-  console.error('Error al crear el post:', (error as Error).message);
-  res.status(500).json({ message: 'Error al crear el post', error: (error as Error).message });
-}
+    console.error('Error al crear el post:', (error as Error).message);
+    res.status(500).json({ message: 'Error al crear el post', error: (error as Error).message });
+  }
 };
 
 // Obtener todos los posts
@@ -146,7 +158,6 @@ export const likePost = async (req: Request, res: Response): Promise<void> => {
   }
 };
 // Añadir un comentario a un post
-// Añadir un comentario a un post
 export const commentPost = async (req: Request, res: Response): Promise<void> => {
   try {
     const { content } = req.body;
@@ -191,8 +202,7 @@ export const commentPost = async (req: Request, res: Response): Promise<void> =>
     // Obtener el post actualizado con referencias pobladas
     const updatedPost = await Post.findById(postId)
       .populate('author', 'name email avatar location')
-      .populate('location', 'name')
-      .populate('commentsList.author', 'name email avatar location');
+      .populate('location', 'name');
 
     // Emitir la actualización del post a todos los clientes
     io.to('posts').emit('update_post', updatedPost);
@@ -201,6 +211,6 @@ export const commentPost = async (req: Request, res: Response): Promise<void> =>
     res.status(200).json(updatedPost);
   } catch (error) {
     console.error('Error al comentar el post:', error);
-    res.status(500).json({ message: 'Error al comentar el post' });
+    res.status(500).json({ message: 'Error al comentar el post', error: (error as Error).message });
   }
 };
