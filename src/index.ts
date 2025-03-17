@@ -8,9 +8,10 @@ import { setupSocketServer } from './config/socketServer';
 
 // Rutas
 import authRoutes from './routes/authRoutes';
-import userRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
 import locationRoutes from './routes/locationRoutes';
 import postRoutes from './routes/postRoutes';
+
 
 dotenv.config();
 
