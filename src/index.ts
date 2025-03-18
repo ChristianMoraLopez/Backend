@@ -22,17 +22,13 @@ const allowedOrigins = ["https://rolo-app.vercel.app", "http://localhost:3000"];
 
 // Configuración de CORS
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("No permitido por CORS"));
-    }
-  },
+  origin: allowedOrigins,
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
+  credentials: true,
+  optionsSuccessStatus: 200
 }));
+
 
 app.use(express.json());
 
