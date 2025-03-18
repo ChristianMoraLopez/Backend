@@ -12,29 +12,35 @@ import userRoutes from './routes/userRoutes';
 import locationRoutes from './routes/locationRoutes';
 import postRoutes from './routes/postRoutes';
 
-
 dotenv.config();
 
 // Configuración de Express
 const app = express();
 const server = http.createServer(app);
+
+// Dominios permitidos
 const allowedOrigins = ["https://rolo-app.vercel.app", "http://localhost:3000"];
 
 // Configuración de CORS
 app.use(cors({
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
 }));
 
-
+// Middleware para analizar el cuerpo de las solicitudes
 app.use(express.json());
 
 // Configurar Socket.io y exportarlo para usarlo en otros módulos
 const io = setupSocketServer(server, allowedOrigins);
-
 export { io };
 
 // Conectar a la base de datos
