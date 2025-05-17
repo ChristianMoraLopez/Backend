@@ -1,26 +1,29 @@
-# Usa la imagen oficial de Node.js
+# Use the official Node.js 18 Alpine image
 FROM node:18-alpine
 
-# Crea y usa el directorio de la app
+# Create and set the working directory
 WORKDIR /app
 
-# Copia los archivos necesarios
+# Copy package.json and package-lock.json
 COPY package.json package-lock.json ./
 
-# Instala dependencias
-RUN npm ci
+# Install dependencies, including devDependencies
+RUN npm ci --include=dev
 
-# Copia todo el código de la app
+# Copy the rest of the application code
 COPY . .
 
-# Da permisos de ejecución a tsc
-RUN chmod +x node_modules/.bin/tsc
+# Ensure node_modules/.bin is in PATH
+ENV PATH=/app/node_modules/.bin:$PATH
 
-# Compila TypeScript
+# Verify tsc is installed and executable
+RUN tsc --version || { echo "TypeScript not found"; exit 1; }
+
+# Compile TypeScript
 RUN npm run build
 
-# Expone el puerto en el que corre la app
+# Expose the port the app runs on
 EXPOSE 3000
 
-# Comando para iniciar el servidor
+# Command to start the server
 CMD ["npm", "run", "start"]
