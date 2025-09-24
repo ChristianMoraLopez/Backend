@@ -19,7 +19,11 @@ const app = express();
 const server = http.createServer(app);
 
 // Dominios permitidos
-const allowedOrigins = ["https://rolo-app.vercel.app", "http://localhost:3000"];
+const allowedOrigins = [
+  "https://rolo-app.vercel.app", 
+    "http://localhost:3000",
+    "http://localhost:8100"
+  ];
 
 // Configuración de CORS
 app.use(cors({
