@@ -11,7 +11,7 @@ import type { Server as HttpServer } from 'http'; // Importa el tipo de servidor
 
 
 
-export function setupSocketServer(server: HttpServer, allowedOrigins = ["https://rolo-app.vercel.app", "http://localhost:3000"]) {
+export function setupSocketServer(server: HttpServer, allowedOrigins = ["https://rolo-app.vercel.app", "http://localhost:3000" , "http://localhost:8100"]) {
     const io = new Server(server, {
       cors: {
         origin: allowedOrigins,
